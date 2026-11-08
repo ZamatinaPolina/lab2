@@ -12,4 +12,28 @@ def analyze_titanic(data: TitanicInput) -> TitanicSummary:
     Нужно: посчитать пропуски, число пассажиров старше 30 лет, средний возраст
     и долю выживших по классам, а также пять наибольших тарифов по убыванию.
     """
-    raise NotImplementedError
+    df = pd.read_csv(data.csv_path)
+ 
+    missing = df.isna().sum()
+
+    missing_by_column = {}
+    for col, n in missing.items():
+        missing_by_column[col] = int(n)
+        adults_over_30_count = int((df["Age"] > 30).sum())
+    
+    mean_age = df.groupby("Pclass")["Age"].mean()
+    mean_age_by_pclass = {int(k): float(v) for k, v in mean_age.items()}
+ 
+    survival = df.groupby("Pclass")["Survived"].mean()
+    survival_rate_by_pclass = {int(k): float(v) for k, v in survival.items()}
+ 
+    highest_fares = [float(x) for x in df["Fare"].nlargest(5)]
+ 
+    return TitanicSummary(
+        row_count=int(len(df)),
+        missing_by_column=missing_by_column,
+        adults_over_30_count=adults_over_30_count,
+        mean_age_by_pclass=mean_age_by_pclass,
+        survival_rate_by_pclass=survival_rate_by_pclass,
+        highest_fares=highest_fares,
+    )
